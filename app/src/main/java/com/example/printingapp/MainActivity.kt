@@ -77,44 +77,41 @@ private fun PrinterApp() {
                 })
             }
 
-            navigation(
-                route = "customerGraph",
-                startDestination = PrinterAppScreen.CustomerDashboard.name
-            ) {
-                composable(PrinterAppScreen.CustomerDashboard.name) {
-                    CustomerDashboardScreen(
-                        onNewOrderButton = { navController.navigate(PrinterAppScreen.NewOrder.name) },
-                        onOrderHistoryButton = { navController.navigate(PrinterAppScreen.OrderHistory.name) },
-                        onExtraButton = {}
-                    )
-                }
-                composable(PrinterAppScreen.NewOrder.name) {
-                    NewOrderScreen(onBackButton = { navController.popBackStack() })
-                }
-                composable(PrinterAppScreen.OrderHistory.name) {
-                    /*TODO OrderHistory*/
-                }
 
+            composable(PrinterAppScreen.CustomerDashboard.name) {
+                CustomerDashboardScreen(
+                    onNewOrderButton = { navController.navigate(PrinterAppScreen.NewOrder.name) },
+                    onOrderHistoryButton = { navController.navigate(PrinterAppScreen.OrderHistory.name) },
+                    onExtraButton = {}
+                )
+            }
+            composable(PrinterAppScreen.NewOrder.name) {
+                NewOrderScreen(onBackButton = { navController.popBackStack() })
+            }
+            composable(PrinterAppScreen.OrderHistory.name) {
+                /*TODO OrderHistory*/
             }
 
-            navigation(
-                route = "adminGraph",
-                startDestination = PrinterAppScreen.AdminDashboard.name
-            ) {
-                composable(PrinterAppScreen.AdminDashboard.name) {
-                    AdminDashboardScreen()
-                }
-                composable(PrinterAppScreen.JobList.name) {
-                    /*TODO JobList*/
-                }
-                composable(PrinterAppScreen.PickupList.name) {
-                    /*TODO PickupList*/
-                }
-                composable(PrinterAppScreen.OrderList.name) {
-                    /*TODO OrderList*/
-                }
+
+
+
+            composable(PrinterAppScreen.AdminDashboard.name) {
+                AdminDashboardScreen()
+            }
+            composable(PrinterAppScreen.JobList.name) {
+                /*TODO JobList*/
+            }
+            composable(PrinterAppScreen.PickupList.name) {
+                /*TODO PickupList*/
+            }
+            composable(PrinterAppScreen.OrderList.name) {
+                /*TODO OrderList*/
             }
 
+
+            composable(PrinterAppScreen.OrderDetails.name) {
+                /*TODO OrderDetails*/
+            }
 
         }
     }
