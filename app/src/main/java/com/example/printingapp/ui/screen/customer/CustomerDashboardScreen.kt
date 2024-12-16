@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,8 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -26,7 +26,6 @@ import com.example.printingapp.model.Order
 import com.example.printingapp.ui.CircleButtonDashboard
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
-import com.example.printingapp.ui.theme.PrintingAppTheme
 
 
 @Composable
@@ -46,14 +45,27 @@ fun CustomerDashboardScreen(
             orderViewModel.getAllOrders()
         }
 
-        Column() {
+        Column(
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
 
-                CircleButtonDashboard("New Order", modifier = Modifier.weight(1f), onButtonClick = onNewOrderButton)
-                CircleButtonDashboard("Order History", modifier = Modifier.weight(1f), onButtonClick = onOrderHistoryButton)
-                CircleButtonDashboard("Extra", modifier = Modifier.weight(1f), onButtonClick = onExtraButton)
+                CircleButtonDashboard(
+                    "New Order",
+                    modifier = Modifier.weight(1f),
+                    onButtonClick = onNewOrderButton
+                )
+                CircleButtonDashboard(
+                    "Order History",
+                    modifier = Modifier.weight(1f),
+                    onButtonClick = onOrderHistoryButton
+                )
+                CircleButtonDashboard(
+                    "Extra",
+                    modifier = Modifier.weight(1f),
+                    onButtonClick = onExtraButton
+                )
 
 
             }
@@ -66,7 +78,7 @@ fun CustomerDashboardScreen(
             MyActiveOrder(
                 ordersUiState = orderViewModel.ordersUiState,
                 retryAction = orderViewModel::getAllOrders,
-                )
+            )
         }
     }
 }
@@ -81,9 +93,11 @@ fun MyActiveOrder(
         is OrdersUiState.Loading -> {
             LoadingScreen(modifier = modifier.fillMaxSize())
         }
+
         is OrdersUiState.Success -> {
             OrderCards(ordersUiState.orders)
         }
+
         is OrdersUiState.Error -> {
             ordersUiState.exception?.message?.let {
                 Text(it)
@@ -92,30 +106,37 @@ fun MyActiveOrder(
                 )
             }
         }
+
         else -> {}
     }
 }
 
 @Composable
-fun OrderCards(orders: List<Order>){
+fun OrderCards(orders: List<Order>) {
 
-    orders.forEach{
-        OrderCard(it)
+    Column(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.secondaryContainer)
+            .verticalScroll(rememberScrollState())
+    ) {
+        orders.forEach {
+            OrderCard(it)
+        }
     }
-
 }
 
 @Composable
 private fun OrderCard(order: Order) {
 
     val orderName = order.order_name ?: ""
-    val orderDescription = "${order.print_detail.paper_type} - ${order.print_detail.paper_width}x${order.print_detail.paper_height}"
-        Box(
+    val orderDescription =
+        "${order.print_detail.paper_type} - ${order.print_detail.paper_width}x${order.print_detail.paper_height}"
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
             .padding(20.dp, 20.dp, 20.dp, 0.dp)
-            .background(Color(201, 217, 242))
+            .background(MaterialTheme.colorScheme.background),
     ) {
 
         Text(
@@ -140,13 +161,5 @@ private fun OrderCard(order: Order) {
             style = MaterialTheme.typography.bodyMedium
         )
 
-    }
-}
-
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun CustomerDashboardPreview() {
-    PrintingAppTheme {
-        CustomerDashboardScreen()
     }
 }

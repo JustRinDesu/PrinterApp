@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -51,6 +53,7 @@ import com.example.printingapp.ui.DropDown
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.theme.PrintingAppTheme
+import okhttp3.Response
 
 val paperSizes = listOf(
     "Custom" to ("8.27" to "11.69"),
@@ -300,35 +303,34 @@ fun MinimalDialog(onDismissRequest: () -> Unit, uiState: OrdersUiState) {
             shape = RoundedCornerShape(16.dp),
         ) {
 
-            when (uiState) {
-                is OrdersUiState.Loading -> {
-                    LoadingScreen()
-                }
-                is OrdersUiState.OrderModificationSuccess -> {
-                    Text(
-                        text = uiState.response.message().toString(),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                is OrdersUiState.Error -> {
-                    uiState.exception?.message?.let {
-                        Text(it)
-                        ErrorScreen(
-                            retryAction = onDismissRequest
+            Column(
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth().fillMaxHeight()
+            ) {
+
+                when (uiState) {
+                    is OrdersUiState.Loading -> {
+                        LoadingScreen()
+                    }
+                    is OrdersUiState.OrderModificationSuccess -> {
+                        Text(
+                            text = "Order Placed",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
+                    is OrdersUiState.Error -> {
+                        uiState.exception?.message?.let {
+                            Text(it)
+                            ErrorScreen(
+                                retryAction = onDismissRequest
+                            )
+                        }
+                    }
+                    else -> {}
                 }
-                else -> {}
             }
 
-            Text(
-                text = "This is a minimal dialog",
-                modifier = Modifier
-                    .fillMaxSize()
-                    .wrapContentSize(Alignment.Center),
-                textAlign = TextAlign.Center,
-            )
         }
     }
 }
@@ -357,6 +359,7 @@ fun NewOrderPreviewDark() {
         NewOrderScreen()
     }
 }
+
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
