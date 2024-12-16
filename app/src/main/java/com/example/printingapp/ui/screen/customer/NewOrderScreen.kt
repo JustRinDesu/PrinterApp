@@ -222,7 +222,10 @@ fun NewOrderScreen(
                         showDialog = false
                         onBackButton()
                     },
-                    orderViewModel.ordersUiState
+                    orderViewModel.ordersUiState,
+                    {
+                        showDialog = false
+                    }
                 )
             }
 
@@ -293,12 +296,12 @@ private fun createNewOrder(
 }
 
 @Composable
-fun MinimalDialog(onDismissRequest: () -> Unit, uiState: OrdersUiState) {
+fun MinimalDialog(onDismissRequest: () -> Unit, uiState: OrdersUiState, onError: () -> Unit = {}) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(300.dp)
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
@@ -316,14 +319,16 @@ fun MinimalDialog(onDismissRequest: () -> Unit, uiState: OrdersUiState) {
                         Text(
                             text = "Order Placed",
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            style = MaterialTheme.typography.displaySmall
                         )
                     }
                     is OrdersUiState.Error -> {
                         uiState.exception?.message?.let {
                             Text(it)
                             ErrorScreen(
-                                retryAction = onDismissRequest
+                                retryAction = onError,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
