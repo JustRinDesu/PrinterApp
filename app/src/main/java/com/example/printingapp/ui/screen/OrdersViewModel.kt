@@ -12,10 +12,12 @@ import com.example.printingapp.PrinterApplication
 import com.example.printingapp.data.PrinterAppRepository
 import com.example.printingapp.model.Order
 import kotlinx.coroutines.launch
+import retrofit2.Response
 import java.io.IOException
 
 sealed interface OrdersUiState {
     data class Success(val orders: List<Order>) : OrdersUiState
+    data class OrderModificationSuccess(val response: Response<Void>) : OrdersUiState
     data class Error(val exception: Throwable? = null) : OrdersUiState
     object Loading : OrdersUiState
 }
@@ -25,7 +27,6 @@ class OrdersViewModel(private val printAppRepository: PrinterAppRepository) : Vi
         private set
 
     init {
-        getAllOrders()
     }
 
     fun getAllOrders() {
@@ -33,6 +34,28 @@ class OrdersViewModel(private val printAppRepository: PrinterAppRepository) : Vi
             ordersUiState = OrdersUiState.Loading
             ordersUiState = try {
                 OrdersUiState.Success(printAppRepository.getAllOrders())
+            } catch (e: IOException) {
+                OrdersUiState.Error(e)
+            } catch (e: HttpException) {
+                OrdersUiState.Error(e)
+            }
+        }
+    }
+
+    fun createOrder(newOrder: Order) {
+        viewModelScope.launch {
+            ordersUiState = OrdersUiState.Loading
+            ordersUiState = try {
+                val response = printAppRepository.createOrder(newOrder)
+
+                // Check if the response code is 201
+                if (response.code() == 201) {
+                    // Trigger OrderModificationSuccess only when the status code is 201
+                    OrdersUiState.OrderModificationSuccess(response)
+                } else {
+                    // Handle other status codes that are not 201
+                    OrdersUiState.Error(Exception("Failed to create order. Status code: ${response.code()}"))
+                }
             } catch (e: IOException) {
                 OrdersUiState.Error(e)
             } catch (e: HttpException) {

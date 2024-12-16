@@ -1,6 +1,6 @@
 @file:Suppress("CanBeVal")
 
-package com.example.printingapp.ui
+package com.example.printingapp.ui.screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

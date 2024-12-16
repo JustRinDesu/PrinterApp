@@ -1,20 +1,26 @@
-package com.example.printingapp.ui
+package com.example.printingapp.ui.screen.customer
 
+import OrdersUiState
+import OrdersViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -24,6 +30,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,9 +39,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.printingapp.model.Order
+import com.example.printingapp.model.PrintDetail
+import com.example.printingapp.ui.DropDown
+import com.example.printingapp.ui.ErrorScreen
+import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.theme.PrintingAppTheme
 
 val paperSizes = listOf(
@@ -55,8 +70,8 @@ fun NewOrderScreen(
     ) {
         var documentName by remember { mutableStateOf("") }
         var noOfPage by remember { mutableStateOf("") }
-        val paperType = listOf("Matte","Gloss","Cardstock")
-        var paperTypeIndex = remember { mutableStateOf(0) }
+        val paperType = listOf("Matte", "Gloss", "Cardstock")
+        val paperTypeIndex = remember { mutableStateOf(0) }
         val paperSizeIndex = remember { mutableStateOf(0) }
         var paperWidth by remember { mutableStateOf("") }
         var paperHeight by remember { mutableStateOf("") }
@@ -64,11 +79,11 @@ fun NewOrderScreen(
 
         Column(
             modifier = Modifier.padding(horizontal = 30.dp, vertical = 30.dp),
-            verticalArrangement = Arrangement.Top
+            verticalArrangement = Arrangement.Center
 
         ) {
 
-            CustomInputRow{
+            CustomInputRow {
                 OutlinedTextField(
                     label = { Text("Document Name") },
                     value = documentName,
@@ -87,7 +102,7 @@ fun NewOrderScreen(
                     shape = MaterialTheme.shapes.small,
                     contentPadding = PaddingValues(0.dp),
 
-                ) {
+                    ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
                         contentDescription = "Location"
@@ -95,7 +110,7 @@ fun NewOrderScreen(
                 }
             }
 
-            CustomInputRow{
+            CustomInputRow {
                 OutlinedTextField(
                     label = { Text("No of copy") },
                     value = noOfPage,
@@ -109,7 +124,7 @@ fun NewOrderScreen(
                 )
             }
 
-            CustomInputRow{
+            CustomInputRow {
                 DropDown(
                     paperType,
                     paperTypeIndex,
@@ -122,9 +137,8 @@ fun NewOrderScreen(
                 )
             }
 
-            CustomInputRow{
+            CustomInputRow {
 
-                /* TODO Replace with dropdown*/
                 DropDown(
                     paperSizes.map { it.first },
                     paperSizeIndex,
@@ -162,11 +176,11 @@ fun NewOrderScreen(
             }
 
             LaunchedEffect(paperSizeIndex.value) {
-                paperWidth = paperSizes[paperSizeIndex.value].second.second ?: ""
-                paperHeight = paperSizes[paperSizeIndex.value].second.second ?: ""
+                paperWidth = paperSizes[paperSizeIndex.value].second.second
+                paperHeight = paperSizes[paperSizeIndex.value].second.second
             }
 
-            CustomInputRow{
+            CustomInputRow {
 
                 Text(
                     "Color Print",
@@ -193,14 +207,30 @@ fun NewOrderScreen(
             }
 
 
-
             /* TODO File upload logic*/
+
+            var showDialog by remember { mutableStateOf(false) }
+
+            val orderViewModel: OrdersViewModel = viewModel(factory = OrdersViewModel.Factory)
+
+            if (showDialog) {
+                MinimalDialog( { onBackButton() },orderViewModel.ordersUiState)
+            }
 
             Button(
                 onClick = {
-                    /*TODO Store order logic*/
-                    onBackButton()
-                          },
+                    createNewOrder(
+                        documentName = documentName,
+                        noOfPage = noOfPage,
+                        paperType = paperType,
+                        paperTypeIndex = paperTypeIndex,
+                        paperWidth = paperWidth,
+                        paperHeight = paperHeight,
+                        isColorPrint = isColorPrint,
+                        orderViewModel = orderViewModel
+                    )
+                    showDialog = true
+                },
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .fillMaxWidth()
@@ -216,16 +246,92 @@ fun NewOrderScreen(
         }
 
 
-
     }
 
+}
+
+private fun createNewOrder(
+    documentName: String,
+    noOfPage: String,
+    paperType: List<String>,
+    paperTypeIndex: MutableState<Int>,
+    paperWidth: String,
+    paperHeight: String,
+    isColorPrint: Boolean,
+    orderViewModel: OrdersViewModel
+) {
+    val order = Order(
+        order_name = documentName,
+        order_id = "",
+        location = "123 Main St",
+        status = "pending",
+        customer_id = "customer_1",
+        admin_id = "",
+        orderDate = "2024-12-12",
+        finishedDate = "",
+        print_detail = PrintDetail(
+            print_detail_id = "",
+            no_of_copy = noOfPage.toInt(),
+            paper_type = paperType[paperTypeIndex.value],
+            paper_width = paperWidth.toDouble(),
+            paper_height = paperHeight.toDouble(),
+            is_color = if (isColorPrint) 1 else 0,
+            file_id = "file-01"
+        )
+    )
+    orderViewModel.createOrder(order)
+
+}
+
+@Composable
+fun MinimalDialog(onDismissRequest: () -> Unit, uiState: OrdersUiState) {
+    Dialog(onDismissRequest = { onDismissRequest() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+                .padding(16.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+
+            when (uiState) {
+                is OrdersUiState.Loading -> {
+                    LoadingScreen()
+                }
+                is OrdersUiState.OrderModificationSuccess -> {
+                    Text(
+                        text = uiState.response.message().toString(),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                is OrdersUiState.Error -> {
+                    uiState.exception?.message?.let {
+                        Text(it)
+                        ErrorScreen(
+                            retryAction = onDismissRequest
+                        )
+                    }
+                }
+                else -> {}
+            }
+
+            Text(
+                text = "This is a minimal dialog",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .wrapContentSize(Alignment.Center),
+                textAlign = TextAlign.Center,
+            )
+        }
+    }
 }
 
 @Composable
 private fun CustomInputRow(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit
-){
+) {
     Row(
         modifier = modifier
             .padding(vertical = 10.dp)

@@ -13,12 +13,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.printingapp.ui.theme.PrintingAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.example.printingapp.ui.AdminDashboardScreen
-import com.example.printingapp.ui.CustomerDashboardScreen
-import com.example.printingapp.ui.LoginScreen
-import com.example.printingapp.ui.NewOrderScreen
+import com.example.printingapp.ui.screen.admin.AdminDashboardScreen
+import com.example.printingapp.ui.screen.customer.CustomerDashboardScreen
+import com.example.printingapp.ui.screen.LoginScreen
+import com.example.printingapp.ui.screen.customer.NewOrderScreen
 
 enum class PrinterAppScreen() {
     Login,

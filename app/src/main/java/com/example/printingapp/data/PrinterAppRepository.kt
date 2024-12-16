@@ -12,17 +12,6 @@ interface PrinterAppRepository {
     suspend fun deleteOrder(id: String): Response<Void>
 }
 
-val test = Order(
-    id = "test",
-    location = "New",
-    status = "Test",
-    customerID = "abc",
-    adminID = "123",
-    printDetailID = "test",
-    orderDate = "1234",
-    finishedDate = "12345"
-)
-
 class NetworkPrinterAppRepository(
     private val printerApiServices: PrinterApiService
 

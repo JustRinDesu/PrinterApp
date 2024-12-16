@@ -1,11 +1,10 @@
-package com.example.printingapp.ui
+package com.example.printingapp.ui.screen.customer
 
 import OrdersUiState
 import OrdersViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -23,7 +23,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printingapp.model.Order
+import com.example.printingapp.ui.CircleButtonDashboard
+import com.example.printingapp.ui.ErrorScreen
+import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.theme.PrintingAppTheme
+
 
 @Composable
 fun CustomerDashboardScreen(
@@ -37,6 +41,10 @@ fun CustomerDashboardScreen(
     ) {
 
         val orderViewModel: OrdersViewModel = viewModel(factory = OrdersViewModel.Factory)
+        LaunchedEffect(Unit) {
+            // Your function call here
+            orderViewModel.getAllOrders()
+        }
 
         Column() {
             Row(
@@ -68,7 +76,6 @@ fun MyActiveOrder(
     ordersUiState: OrdersUiState,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     when (ordersUiState) {
         is OrdersUiState.Loading -> {
@@ -78,8 +85,14 @@ fun MyActiveOrder(
             OrderCards(ordersUiState.orders)
         }
         is OrdersUiState.Error -> {
-            ordersUiState.exception?.message?.let { Text(it) }
+            ordersUiState.exception?.message?.let {
+                Text(it)
+                ErrorScreen(
+                    retryAction = retryAction
+                )
+            }
         }
+        else -> {}
     }
 }
 
@@ -87,7 +100,7 @@ fun MyActiveOrder(
 fun OrderCards(orders: List<Order>){
 
     orders.forEach{
-        OrderCard(it.id,it.location,it.status)
+        OrderCard(it.order_name ?: "order_name null",it.location,it.status)
     }
 
 }
