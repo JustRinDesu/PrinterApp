@@ -100,15 +100,17 @@ fun MyActiveOrder(
 fun OrderCards(orders: List<Order>){
 
     orders.forEach{
-        OrderCard(it.order_name ?: "order_name null",it.location,it.status)
+        OrderCard(it)
     }
 
 }
 
 @Composable
-private fun OrderCard(orderName: String, orderDescription: String, orderStatus: String) {
+private fun OrderCard(order: Order) {
 
-    Box(
+    val orderName = order.order_name ?: ""
+    val orderDescription = "${order.print_detail.paper_type} - ${order.print_detail.paper_width}x${order.print_detail.paper_height}"
+        Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(150.dp)
@@ -122,6 +124,7 @@ private fun OrderCard(orderName: String, orderDescription: String, orderStatus: 
                 .align(Alignment.TopStart)
                 .padding(20.dp),
         )
+
         Text(
             text = orderDescription,
             modifier = Modifier
@@ -130,7 +133,7 @@ private fun OrderCard(orderName: String, orderDescription: String, orderStatus: 
             fontSize = 12.sp
         )
         Text(
-            text = orderStatus,
+            text = order.status,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp),

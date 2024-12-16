@@ -69,7 +69,7 @@ fun NewOrderScreen(
         modifier = modifier,
     ) {
         var documentName by remember { mutableStateOf("") }
-        var noOfPage by remember { mutableStateOf("") }
+        var noOfPage by remember { mutableStateOf("1") }
         val paperType = listOf("Matte", "Gloss", "Cardstock")
         val paperTypeIndex = remember { mutableStateOf(0) }
         val paperSizeIndex = remember { mutableStateOf(0) }
@@ -214,7 +214,13 @@ fun NewOrderScreen(
             val orderViewModel: OrdersViewModel = viewModel(factory = OrdersViewModel.Factory)
 
             if (showDialog) {
-                MinimalDialog( { onBackButton() },orderViewModel.ordersUiState)
+                MinimalDialog(
+                    {
+                        showDialog = false
+                        onBackButton()
+                    },
+                    orderViewModel.ordersUiState
+                )
             }
 
             Button(
@@ -271,7 +277,7 @@ private fun createNewOrder(
         finishedDate = "",
         print_detail = PrintDetail(
             print_detail_id = "",
-            no_of_copy = noOfPage.toInt(),
+            no_of_copy = noOfPage.toIntOrNull() ?: 1,
             paper_type = paperType[paperTypeIndex.value],
             paper_width = paperWidth.toDouble(),
             paper_height = paperHeight.toDouble(),
