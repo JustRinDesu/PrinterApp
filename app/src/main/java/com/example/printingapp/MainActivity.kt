@@ -8,15 +8,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printingapp.ui.theme.PrintingAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.printingapp.ui.PrinterAppViewModel
 import com.example.printingapp.ui.screen.admin.AdminDashboardScreen
 import com.example.printingapp.ui.screen.customer.CustomerDashboardScreen
-import com.example.printingapp.ui.screen.LoginScreen
+import com.example.printingapp.ui.screen.common.LoginScreen
 import com.example.printingapp.ui.screen.customer.NewOrderScreen
 
 enum class PrinterAppScreen() {
@@ -48,10 +53,17 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-private fun PrinterApp() {
+private fun PrinterApp(
+    printerAppViewModel: PrinterAppViewModel = viewModel()
+) {
     val navController = rememberNavController()
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+
+        val uiState by printerAppViewModel.uiState.collectAsState()
+
+
+
 
         NavHost(
             navController = navController,
@@ -61,19 +73,27 @@ private fun PrinterApp() {
                 .fillMaxSize()
         ) {
             composable(route = PrinterAppScreen.Login.name) {
-                LoginScreen(onLoginSuccess = { userRole ->
-                    if (userRole == "customer") {
-                        navController.navigate(
-                            PrinterAppScreen.CustomerDashboard.name
-                        )
-                    }
-                    if (userRole == "admin") {
-                        navController.navigate(
-                            PrinterAppScreen.AdminDashboard.name
-                        )
-                    }
 
-                })
+                val context = LocalContext.current
+                LoginScreen(
+                    onLoginSuccess = { userRole ->
+
+                        if (userRole == "customer") {
+                            navController.navigate(
+                                PrinterAppScreen.CustomerDashboard.name
+                            )
+                        }
+                        if (userRole == "admin") {
+                            navController.navigate(
+                                PrinterAppScreen.AdminDashboard.name
+                            )
+                        }
+
+                    },
+                    printerAPpViewModel = printerAppViewModel
+
+
+                )
             }
 
 

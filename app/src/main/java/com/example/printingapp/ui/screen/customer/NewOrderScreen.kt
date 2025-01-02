@@ -1,28 +1,21 @@
 package com.example.printingapp.ui.screen.customer
 
-import OrdersUiState
-import OrdersViewModel
+import NewOrderViewModel
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -45,15 +38,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printingapp.model.Order
 import com.example.printingapp.model.PrintDetail
 import com.example.printingapp.ui.DropDown
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
+import com.example.printingapp.ui.MinimalDialog
 import com.example.printingapp.ui.theme.PrintingAppTheme
-import okhttp3.Response
 
 val paperSizes = listOf(
     "Custom" to ("8.27" to "11.69"),
@@ -65,7 +57,8 @@ val paperSizes = listOf(
 @Composable
 fun NewOrderScreen(
     modifier: Modifier = Modifier,
-    onBackButton: () -> Unit = {}
+    onBackButton: () -> Unit = {},
+    orderViewModel: NewOrderViewModel? = viewModel(factory = NewOrderViewModel.Factory)
 ) {
 
     Surface(
@@ -212,55 +205,86 @@ fun NewOrderScreen(
 
             /* TODO File upload logic*/
 
-            var showDialog by remember { mutableStateOf(false) }
 
-            val orderViewModel: OrdersViewModel = viewModel(factory = OrdersViewModel.Factory)
+            if (orderViewModel != null) {
 
-            if (showDialog) {
-                MinimalDialog(
-                    {
-                        showDialog = false
-                        onBackButton()
-                    },
-                    orderViewModel.ordersUiState,
-                    {
-                        showDialog = false
+                var showDialog by remember { mutableStateOf(false) }
+                if (showDialog) {
+
+
+
+                    MinimalDialog(
+                        onDismissRequest = {
+                            showDialog = false
+                            onBackButton()
+                        }
+                    ) {
+                        when (orderViewModel.ordersUiState) {
+                            is NewOrderViewModel.OrdersUiState.Loading -> {
+                                LoadingScreen()
+                            }
+
+                            is NewOrderViewModel.OrdersUiState.OrderModificationSuccess -> {
+                                Text(
+                                    text = "Order Placed",
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    style = MaterialTheme.typography.displaySmall
+                                )
+                            }
+
+                            is NewOrderViewModel.OrdersUiState.Error -> {
+                                (orderViewModel.ordersUiState as NewOrderViewModel.OrdersUiState.Error).exception?.message?.let {
+                                    Text(it)
+                                    ErrorScreen(
+                                        retryAction = {
+                                            showDialog = false
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
+
+                            else -> {}
+                        }
                     }
-                )
-            }
+                }
 
-            Button(
-                onClick = {
-                    createNewOrder(
-                        documentName = documentName,
-                        noOfPage = noOfPage,
-                        paperType = paperType,
-                        paperTypeIndex = paperTypeIndex,
-                        paperWidth = paperWidth,
-                        paperHeight = paperHeight,
-                        isColorPrint = isColorPrint,
-                        orderViewModel = orderViewModel
+                Button(
+                    onClick = {
+                        createNewOrder(
+                            documentName = documentName,
+                            noOfPage = noOfPage,
+                            paperType = paperType,
+                            paperTypeIndex = paperTypeIndex,
+                            paperWidth = paperWidth,
+                            paperHeight = paperHeight,
+                            isColorPrint = isColorPrint,
+                            orderViewModel = orderViewModel
+                        )
+                        showDialog = true
+                    },
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.tertiary,
+                        contentColor = MaterialTheme.colorScheme.onTertiary
                     )
-                    showDialog = true
-                },
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.tertiary,
-                    contentColor = MaterialTheme.colorScheme.onTertiary
-                )
 
-            ) {
-                Text("Place Order")
+                ) {
+                    Text("Place Order")
+                }
             }
+
         }
 
 
     }
 
 }
+
 
 private fun createNewOrder(
     documentName: String,
@@ -270,7 +294,7 @@ private fun createNewOrder(
     paperWidth: String,
     paperHeight: String,
     isColorPrint: Boolean,
-    orderViewModel: OrdersViewModel
+    orderViewModel: NewOrderViewModel
 ) {
     val order = Order(
         order_name = documentName,
@@ -296,51 +320,6 @@ private fun createNewOrder(
 }
 
 @Composable
-fun MinimalDialog(onDismissRequest: () -> Unit, uiState: OrdersUiState, onError: () -> Unit = {}) {
-    Dialog(onDismissRequest = { onDismissRequest() }) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-        ) {
-
-            Column(
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth().fillMaxHeight()
-            ) {
-
-                when (uiState) {
-                    is OrdersUiState.Loading -> {
-                        LoadingScreen()
-                    }
-                    is OrdersUiState.OrderModificationSuccess -> {
-                        Text(
-                            text = "Order Placed",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth(),
-                            style = MaterialTheme.typography.displaySmall
-                        )
-                    }
-                    is OrdersUiState.Error -> {
-                        uiState.exception?.message?.let {
-                            Text(it)
-                            ErrorScreen(
-                                retryAction = onError,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
-                    else -> {}
-                }
-            }
-
-        }
-    }
-}
-
-@Composable
 private fun CustomInputRow(
     modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit
@@ -357,19 +336,11 @@ private fun CustomInputRow(
     )
 }
 
-@Preview(showBackground = true, widthDp = 360, heightDp = 640)
-@Composable
-fun NewOrderPreviewDark() {
-    PrintingAppTheme(darkTheme = true) {
-        NewOrderScreen()
-    }
-}
-
 
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun NewOrderPreview() {
     PrintingAppTheme() {
-        NewOrderScreen()
+        NewOrderScreen(orderViewModel = null)
     }
 }

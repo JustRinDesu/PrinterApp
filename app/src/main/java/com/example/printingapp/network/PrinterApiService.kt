@@ -1,6 +1,7 @@
 package com.example.printingapp.network
 
 import com.example.printingapp.model.Order
+import com.example.printingapp.model.User
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -25,5 +26,8 @@ interface PrinterApiService {
 
     @DELETE("orders/{id}")
     suspend fun deleteOrder(@Path("id") id: String): Response<Void>
+
+    @POST("user/login")
+    suspend fun loginUser(@Body user: User): Response<User>
 
 }

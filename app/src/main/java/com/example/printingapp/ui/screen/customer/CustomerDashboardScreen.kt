@@ -1,6 +1,5 @@
 package com.example.printingapp.ui.screen.customer
 
-import OrdersUiState
 import OrdersViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -41,7 +40,6 @@ fun CustomerDashboardScreen(
 
         val orderViewModel: OrdersViewModel = viewModel(factory = OrdersViewModel.Factory)
         LaunchedEffect(Unit) {
-            // Your function call here
             orderViewModel.getAllOrders()
         }
 
@@ -73,7 +71,6 @@ fun CustomerDashboardScreen(
                 text = "Active order:",
                 modifier = Modifier.padding(10.dp, 20.dp, 10.dp, 0.dp)
             )
-//            OrderCard("Document A", "A4,....","Pending")
 
             MyActiveOrder(
                 ordersUiState = orderViewModel.ordersUiState,
@@ -85,20 +82,20 @@ fun CustomerDashboardScreen(
 
 @Composable
 fun MyActiveOrder(
-    ordersUiState: OrdersUiState,
+    ordersUiState: OrdersViewModel.OrdersUiState,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (ordersUiState) {
-        is OrdersUiState.Loading -> {
+        is OrdersViewModel.OrdersUiState.Loading -> {
             LoadingScreen(modifier = modifier.fillMaxSize())
         }
 
-        is OrdersUiState.Success -> {
+        is OrdersViewModel.OrdersUiState.Success -> {
             OrderCards(ordersUiState.orders)
         }
 
-        is OrdersUiState.Error -> {
+        is OrdersViewModel.OrdersUiState.Error -> {
             ordersUiState.exception?.message?.let {
                 Text(it)
                 ErrorScreen(
@@ -128,7 +125,6 @@ fun OrderCards(orders: List<Order>) {
 @Composable
 private fun OrderCard(order: Order) {
 
-    val orderName = order.order_name ?: ""
     val orderDescription =
         "${order.print_detail.paper_type} - ${order.print_detail.paper_width}x${order.print_detail.paper_height}"
     Box(
@@ -140,7 +136,7 @@ private fun OrderCard(order: Order) {
     ) {
 
         Text(
-            text = orderName,
+            text = order.order_name ?: "Test",
             modifier = Modifier
                 .align(Alignment.TopStart)
                 .padding(20.dp),
