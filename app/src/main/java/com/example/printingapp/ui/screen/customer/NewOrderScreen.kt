@@ -1,6 +1,9 @@
 package com.example.printingapp.ui.screen.customer
 
 import NewOrderViewModel
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -32,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -39,6 +43,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.printingapp.PrinterApplication
 import com.example.printingapp.model.Order
 import com.example.printingapp.model.PrintDetail
 import com.example.printingapp.ui.DropDown
@@ -85,8 +90,7 @@ fun NewOrderScreen(
                     value = documentName,
                     singleLine = true,
                     onValueChange = { documentName = it },
-                    modifier = Modifier
-                        .weight(3f)
+                    modifier = Modifier.weight(3f)
                 )
 
                 /* TODO location choice*/
@@ -100,74 +104,60 @@ fun NewOrderScreen(
 
                     ) {
                     Icon(
-                        imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Location"
+                        imageVector = Icons.Default.LocationOn, contentDescription = "Location"
                     )
                 }
             }
 
             CustomInputRow {
-                OutlinedTextField(
-                    label = { Text("No of copy") },
+                OutlinedTextField(label = { Text("No of copy") },
                     value = noOfPage,
                     onValueChange = { noOfPage = it },
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
+                        keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth(0.5f)
+                    modifier = Modifier.fillMaxWidth(0.5f)
                 )
             }
 
             CustomInputRow {
-                DropDown(
-                    paperType,
+                DropDown(paperType,
                     paperTypeIndex,
                     modifier = Modifier
                         .fillMaxWidth(0.5f)
                         .padding(top = 4.dp),
                     label = {
                         Text("Paper type", fontSize = 10.sp)
-                    }
-                )
+                    })
             }
 
             CustomInputRow {
 
-                DropDown(
-                    paperSizes.map { it.first },
+                DropDown(paperSizes.map { it.first },
                     paperSizeIndex,
                     modifier = Modifier
                         .weight(7f)
                         .padding(top = 4.dp),
                     label = {
                         Text("Size", fontSize = 10.sp)
-                    }
-                )
-                OutlinedTextField(
-                    label = { Text("Width") },
+                    })
+                OutlinedTextField(label = { Text("Width") },
                     value = paperWidth,
                     onValueChange = { paperWidth = it },
                     readOnly = (paperSizeIndex.value != 0),
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
+                        keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
                     ),
-                    modifier = Modifier
-                        .weight(5f)
+                    modifier = Modifier.weight(5f)
                 )
-                OutlinedTextField(
-                    label = { Text("Height") },
+                OutlinedTextField(label = { Text("Height") },
                     value = paperHeight,
                     onValueChange = { paperHeight = it },
                     readOnly = (paperSizeIndex.value != 0),
                     keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
+                        keyboardType = KeyboardType.Number, imeAction = ImeAction.Next
                     ),
-                    modifier = Modifier
-                        .weight(5f)
+                    modifier = Modifier.weight(5f)
                 )
             }
 
@@ -179,46 +169,75 @@ fun NewOrderScreen(
             CustomInputRow {
 
                 Text(
-                    "Color Print",
-                    fontSize = 19.sp
+                    "Color Print", fontSize = 19.sp
                 )
 
-                Switch(
-                    checked = isColorPrint,
-                    onCheckedChange = {
-                        isColorPrint = it
-                    },
-                    thumbContent = if (isColorPrint) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    } else {
-                        null
+                Switch(checked = isColorPrint, onCheckedChange = {
+                    isColorPrint = it
+                }, thumbContent = if (isColorPrint) {
+                    {
+                        Icon(
+                            imageVector = Icons.Filled.Check,
+                            contentDescription = null,
+                            modifier = Modifier.size(SwitchDefaults.IconSize),
+                        )
                     }
-                )
+                } else {
+                    null
+                })
             }
 
+            val context = LocalContext.current
 
-            /* TODO File upload logic*/
+
 
 
             if (orderViewModel != null) {
 
+                var fileUri by remember { mutableStateOf<Uri?>(null) }
+
+                val filePickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent()
+                ) { uri: Uri? ->
+                    fileUri = uri
+                    uri?.let{
+                        orderViewModel.uploadFile(uri,context)
+                    }
+                }
+
+                Button(onClick = {
+                    filePickerLauncher.launch("*/*")
+                }) {
+                    Text("Choose File")
+                }
+
+                fileUri?.let {
+                    Text("Selected File: $it")
+
+                    when(orderViewModel.fileUiState){
+                        is NewOrderViewModel.FileUiState.Loading -> {
+                            LoadingScreen()
+                        }
+                        is NewOrderViewModel.FileUiState.Success -> {
+                            Text("Successfully upload")
+                        }
+                        is NewOrderViewModel.FileUiState.Error -> {
+                            Text(orderViewModel.fileUiState.toString())
+                        }
+                        else -> {
+
+                        }
+                    }
+
+                }
                 var showDialog by remember { mutableStateOf(false) }
                 if (showDialog) {
 
 
-
-                    MinimalDialog(
-                        onDismissRequest = {
-                            showDialog = false
-                            onBackButton()
-                        }
-                    ) {
+                    MinimalDialog(onDismissRequest = {
+                        showDialog = false
+                        onBackButton()
+                    }) {
                         when (orderViewModel.ordersUiState) {
                             is NewOrderViewModel.OrdersUiState.Loading -> {
                                 LoadingScreen()
@@ -239,8 +258,7 @@ fun NewOrderScreen(
                                     ErrorScreen(
                                         retryAction = {
                                             showDialog = false
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
+                                        }, modifier = Modifier.fillMaxWidth()
                                     )
                                 }
                             }
@@ -250,40 +268,66 @@ fun NewOrderScreen(
                     }
                 }
 
-                Button(
-                    onClick = {
-                        createNewOrder(
-                            documentName = documentName,
-                            noOfPage = noOfPage,
-                            paperType = paperType,
-                            paperTypeIndex = paperTypeIndex,
-                            paperWidth = paperWidth,
-                            paperHeight = paperHeight,
-                            isColorPrint = isColorPrint,
-                            orderViewModel = orderViewModel
+                if(orderViewModel.fileUiState is NewOrderViewModel.FileUiState.Success){
+                    Button(
+                        onClick = {
+                            createNewOrder(
+                                documentName = documentName,
+                                noOfPage = noOfPage,
+                                paperType = paperType,
+                                paperTypeIndex = paperTypeIndex,
+                                paperWidth = paperWidth,
+                                paperHeight = paperHeight,
+                                isColorPrint = isColorPrint,
+                                orderViewModel = orderViewModel,
+                                fileId = (orderViewModel.fileUiState as NewOrderViewModel.FileUiState.Success).fileId
+                            )
+                            showDialog = true
+                        },
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            contentColor = MaterialTheme.colorScheme.onTertiary
                         )
-                        showDialog = true
-                    },
-                    modifier = Modifier
-                        .padding(vertical = 8.dp)
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.tertiary,
-                        contentColor = MaterialTheme.colorScheme.onTertiary
-                    )
 
-                ) {
-                    Text("Place Order")
+                    ) {
+                        Text("Place Order")
+                    }
+
                 }
+                else{
+                    Button(
+                        enabled = false,
+                        onClick = {},
+                        modifier = Modifier
+                            .padding(vertical = 8.dp)
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary,
+                            contentColor = MaterialTheme.colorScheme.onTertiary
+                        )
+
+                    ) {
+                        Text("Place Order")
+                    }
+                }
+
             }
 
         }
 
-
     }
 
 }
+
+const val REQUEST_IMAGE_GET = 1
+
+
+
 
 
 private fun createNewOrder(
@@ -294,14 +338,15 @@ private fun createNewOrder(
     paperWidth: String,
     paperHeight: String,
     isColorPrint: Boolean,
-    orderViewModel: NewOrderViewModel
+    orderViewModel: NewOrderViewModel,
+    fileId: String
 ) {
     val order = Order(
         order_name = documentName,
         order_id = "",
         location = "123 Main St",
         status = "pending",
-        customer_id = "customer_1",
+        customer_id = PrinterApplication.instance.getGlobalValue("username") ?: "customer_1",
         admin_id = "",
         orderDate = "2024-12-12",
         finishedDate = "",
@@ -312,7 +357,7 @@ private fun createNewOrder(
             paper_width = paperWidth.toDouble(),
             paper_height = paperHeight.toDouble(),
             is_color = if (isColorPrint) 1 else 0,
-            file_id = "file-01"
+            file_id = fileId
         )
     )
     orderViewModel.createOrder(order)
@@ -321,8 +366,7 @@ private fun createNewOrder(
 
 @Composable
 private fun CustomInputRow(
-    modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
+    modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit
 ) {
     Row(
         modifier = modifier
@@ -340,7 +384,7 @@ private fun CustomInputRow(
 @Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
 fun NewOrderPreview() {
-    PrintingAppTheme() {
+    PrintingAppTheme {
         NewOrderScreen(orderViewModel = null)
     }
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,10 +20,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.printingapp.PrinterApplication
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.MinimalDialog
@@ -37,13 +40,13 @@ fun LoginScreen(
     printerAPpViewModel: PrinterAppViewModel? = null
 ) {
     Surface(
-        modifier = modifier
+        modifier = modifier.widthIn(min = 400.dp, max = 600.dp),
     ) {
-        var usernameInput by remember { mutableStateOf("") }
-        var passwordInput by remember { mutableStateOf("") }
+        var usernameInput by remember { mutableStateOf("customer_1") }
+        var passwordInput by remember { mutableStateOf("customer_password") }
         var showDialog by remember { mutableStateOf(false) }
 
-        var onLoginCLick = {username: String, password: String -> }
+        var onLoginCLick = {_: String, _: String -> }
 
         if(loginViewModel != null && printerAPpViewModel != null){
             onLoginCLick = {username: String, password: String ->
@@ -54,6 +57,8 @@ fun LoginScreen(
             var minimalDialogClose by remember { mutableStateOf({
                 showDialog = false
             })}
+
+            val context = LocalContext.current.applicationContext
 
             if (showDialog) {
                 MinimalDialog(
@@ -71,13 +76,17 @@ fun LoginScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 style = MaterialTheme.typography.displaySmall
                             )
+
+
+
+                            val body = (loginViewModel.loginUiState as
+                                    LoginViewModel.LoginUiState.LoginReceive).response.body()
+
+                            PrinterApplication.instance.saveGlobalValue("username",body?.username ?: "username")
+
                             minimalDialogClose = {
                                 showDialog = false
-                                onLoginSuccess(
-                                    (loginViewModel.loginUiState as
-                                            LoginViewModel.LoginUiState.LoginReceive)
-                                        .response.body()?.userRole ?: "customer"
-                                )
+                                onLoginSuccess(body?.userRole ?: "customer")
                             }
                         }
 
@@ -102,7 +111,9 @@ fun LoginScreen(
         }
 
         Column(
-            modifier = Modifier.padding(horizontal = 30.dp, vertical = 30.dp),
+            modifier = Modifier
+                .padding(horizontal = 30.dp, vertical = 30.dp)
+                ,
             verticalArrangement = Arrangement.Center
 
         ) {
@@ -124,6 +135,7 @@ fun LoginScreen(
             )
             Button(
                 onClick = {
+                    //onLoginSuccess("customer")
                     onLoginCLick(usernameInput, passwordInput)
                 }, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.tertiary,

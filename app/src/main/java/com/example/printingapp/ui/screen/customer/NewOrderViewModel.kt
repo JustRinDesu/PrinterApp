@@ -1,3 +1,5 @@
+import android.content.Context
+import android.net.Uri
 import retrofit2.HttpException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,7 +23,16 @@ class NewOrderViewModel(private val printAppRepository: PrinterAppRepository) : 
     var ordersUiState: OrdersUiState by mutableStateOf(OrdersUiState.Loading)
         private set
 
+    var fileUiState: FileUiState by mutableStateOf(FileUiState.Loading)
+        private set
+
     init {
+    }
+
+    sealed interface FileUiState {
+        data class Success(val fileId: String) : FileUiState
+        data class Error(val exception: Throwable? = null) : FileUiState
+        object Loading : FileUiState
     }
 
     sealed interface OrdersUiState {
@@ -29,6 +40,19 @@ class NewOrderViewModel(private val printAppRepository: PrinterAppRepository) : 
         data class OrderModificationSuccess(val response: Response<Void>) : OrdersUiState
         data class Error(val exception: Throwable? = null) : OrdersUiState
         object Loading : OrdersUiState
+    }
+
+    fun uploadFile(uri: Uri, context: Context) {
+        viewModelScope.launch {
+            fileUiState = FileUiState.Loading
+            fileUiState = try {
+                val fileResponse = printAppRepository.uploadFile(uri,context)
+
+                FileUiState.Success(fileResponse.fileId)
+            } catch (e: Exception) {
+                FileUiState.Error(e)
+            }
+        }
     }
 
     fun createOrder(newOrder: Order) {

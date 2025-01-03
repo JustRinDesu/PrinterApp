@@ -10,18 +10,22 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import com.example.printingapp.ui.theme.PrintingAppTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.printingapp.ui.PrinterAppViewModel
 import com.example.printingapp.ui.screen.admin.AdminDashboardScreen
 import com.example.printingapp.ui.screen.customer.CustomerDashboardScreen
 import com.example.printingapp.ui.screen.common.LoginScreen
+import com.example.printingapp.ui.screen.common.OrderDetailsScreen
 import com.example.printingapp.ui.screen.customer.NewOrderScreen
 
 enum class PrinterAppScreen() {
@@ -69,8 +73,8 @@ private fun PrinterApp(
             navController = navController,
             startDestination = PrinterAppScreen.Login.name,
             modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize()
+                .padding(innerPadding).fillMaxSize()
+//
         ) {
             composable(route = PrinterAppScreen.Login.name) {
 
@@ -101,7 +105,10 @@ private fun PrinterApp(
                 CustomerDashboardScreen(
                     onNewOrderButton = { navController.navigate(PrinterAppScreen.NewOrder.name) },
                     onOrderHistoryButton = { navController.navigate(PrinterAppScreen.OrderHistory.name) },
-                    onExtraButton = {}
+                    onExtraButton = {},
+                    onOrderClick = {orderId ->
+                        navController.navigate(route = "order/${orderId}")
+                    }
                 )
             }
             composable(PrinterAppScreen.NewOrder.name) {
@@ -125,6 +132,22 @@ private fun PrinterApp(
             }
             composable(PrinterAppScreen.OrderList.name) {
                 /*TODO OrderList*/
+            }
+
+            composable(
+                route = "order/{orderId}",
+                arguments = listOf(
+                    navArgument("orderId") {
+                        type = NavType.StringType
+                    }
+                )
+            )
+            {
+                val orderId = it.arguments?.getString("orderId") ?: ""
+
+                OrderDetailsScreen(
+                    orderId = orderId
+                )
             }
 
 
