@@ -71,7 +71,7 @@ class OrderListViewModel(private val printAppRepository: PrinterAppRepository) :
             prepareUiState = PrepareUiState.Loading
             prepareUiState = try {
 
-                PrepareUiState.Success(printAppRepository.prepareOrder(user ?: User("","",""),id,status))
+                PrepareUiState.Success(printAppRepository.prepareOrder(user ?: User("","","", ""),id,status))
             } catch (e: IOException) {
                 PrepareUiState.Error(e)
             } catch (e: HttpException) {

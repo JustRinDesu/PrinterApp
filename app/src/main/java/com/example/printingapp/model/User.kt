@@ -8,6 +8,7 @@ data class User (
 
     val username: String,
     val password: String?,
+    val name: String,
     @SerialName("user_role")
     var userRole: String?,
 

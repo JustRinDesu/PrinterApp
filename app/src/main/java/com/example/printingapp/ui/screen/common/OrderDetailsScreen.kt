@@ -104,6 +104,11 @@ fun OrderDetails(
         }
 
         Text(
+            text = "orderer by: ${order.customer_id}",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Text(
             text = "Status: ${status}",
             style = MaterialTheme.typography.headlineMedium
         )
@@ -130,6 +135,13 @@ fun OrderDetails(
             },
             style = MaterialTheme.typography.headlineMedium
         )
+
+        order.admin_id?.let{
+            Text(
+                text = "Order prepare by: ${order.admin_id}",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
 
         val context = LocalContext.current
 

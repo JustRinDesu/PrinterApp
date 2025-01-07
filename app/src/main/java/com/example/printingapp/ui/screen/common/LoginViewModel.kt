@@ -34,7 +34,7 @@ class LoginViewModel(private val printAppRepository: PrinterAppRepository) : Vie
         viewModelScope.launch {
             loginUiState = LoginUiState.Loading
             loginUiState = try {
-                val response = printAppRepository.loginUser(User(username, password, null))
+                val response = printAppRepository.loginUser(User(username, password, "test", null))
 
 
                 if (response.code() == 200) {

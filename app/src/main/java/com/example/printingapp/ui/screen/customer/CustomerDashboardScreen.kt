@@ -85,9 +85,9 @@ fun CustomerDashboardScreen(
             }
 
             orderViewModel.let {
-                val username = PrinterApplication.appViewModel.get_user()?.username
+                val name = PrinterApplication.appViewModel.get_user()?.name
 
-                Text("Hello $username test")
+                Text("Hello $name test")
                 Row() {
                     Text(
                         text = "Active order:",
