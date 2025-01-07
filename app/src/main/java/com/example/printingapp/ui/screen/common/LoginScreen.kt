@@ -58,8 +58,6 @@ fun LoginScreen(
                 showDialog = false
             })}
 
-            val context = LocalContext.current.applicationContext
-
             if (showDialog) {
                 MinimalDialog(
                     onDismissRequest = minimalDialogClose
@@ -82,7 +80,8 @@ fun LoginScreen(
                             val body = (loginViewModel.loginUiState as
                                     LoginViewModel.LoginUiState.LoginReceive).response.body()
 
-                            PrinterApplication.instance.saveGlobalValue("username",body?.username ?: "username")
+                            PrinterApplication.instance
+                                .saveGlobalValue("username",body?.username ?: "username")
 
                             minimalDialogClose = {
                                 showDialog = false
@@ -91,7 +90,8 @@ fun LoginScreen(
                         }
 
                         is LoginViewModel.LoginUiState.Error -> {
-                            (loginViewModel.loginUiState as LoginViewModel.LoginUiState.Error).exception?.message?.let {
+                            (loginViewModel.loginUiState as LoginViewModel.LoginUiState.Error)
+                                .exception?.message?.let {
                                 Text(it)
                                 ErrorScreen(
                                     retryAction = {

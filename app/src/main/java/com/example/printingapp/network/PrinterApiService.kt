@@ -14,11 +14,12 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface PrinterApiService {
 
     @GET("orders")
-    suspend fun getAllOrders(): List<Order>
+    suspend fun getAllOrders(@Query("customer_id") customer_id: String,@Query("admin_id") admin_id: String, @Query("status") status: String): List<Order>
 
     @GET("orders/{id}")
     suspend fun getOrderById(@Path("id") id: String): Order
@@ -26,6 +27,10 @@ interface PrinterApiService {
     @POST("orders")
     @Headers("X-Custom-Header: printerAppSecurity")
     suspend fun createOrder(@Body newOrder: Order): Response<Void>
+
+    @POST("prepare/{id}")
+    @Headers("X-Custom-Header: printerAppSecurity")
+    suspend fun prepareOrder(@Body user: User,@Path("id") orderId: String, @Query("status") status: String): Response<Void>
 
     @PUT("orders/{id}")
     suspend fun updateOrder(@Path("id") id: String, @Body updatedOrder: Order): Response<Void>

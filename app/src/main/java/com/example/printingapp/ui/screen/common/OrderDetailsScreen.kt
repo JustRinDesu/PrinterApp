@@ -2,10 +2,14 @@ package com.example.printingapp.ui.screen.common
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.net.Uri
-import android.widget.Button
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -13,16 +17,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.printingapp.model.Order
 import com.example.printingapp.model.PrintDetail
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.theme.PrintingAppTheme
+import java.net.URL
 
 
 @Composable
@@ -71,33 +78,57 @@ fun OrderDetails(
     order: Order
 ){
     Column(
-        modifier = Modifier.padding(horizontal = 2.dp)
+        modifier = Modifier.padding(horizontal = 20.dp),
+        verticalArrangement = Arrangement.Center
     ){
         Text(
             text = order.order_name ?: "No Document Name",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineLarge
         )
 
+
+        AsyncImage(
+            "http://157.245.204.192:3000/download/${order.print_detail.file_id}/thumbnail",
+            "Test",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+            contentScale = ContentScale.FillHeight
+        )
+
+        val status = when(order.status){
+            "pickup" -> "Ready for pickup"
+            "pending" -> "Processing Order"
+            "preparing" -> "Preparing Order"
+            else -> order.status
+        }
+
         Text(
-            text = order.status
+            text = "Status: ${status}",
+            style = MaterialTheme.typography.headlineMedium
         )
         Text(
-            text = order.location
+            text = "Location: ${order.location}",
+            style = MaterialTheme.typography.headlineMedium
         )
         Text(
-            text = order.orderDate
+            text = "Date ordered ${order.orderDate}",
+            style = MaterialTheme.typography.headlineMedium
         )
         Text(
-            text = order.print_detail.paper_type
+            text = order.print_detail.paper_type,
+            style = MaterialTheme.typography.headlineMedium
         )
         Text(
-            text = "${order.print_detail.paper_width} x ${order.print_detail.paper_height}"
+            text = "${order.print_detail.paper_width} x ${order.print_detail.paper_height}",
+            style = MaterialTheme.typography.headlineMedium
         )
         Text(
             text = "Colored:" + when{
                 (order.print_detail.is_color == 1) ->  "Yes"
                 else -> "No"
-            }
+            },
+            style = MaterialTheme.typography.headlineMedium
         )
 
         val context = LocalContext.current
@@ -130,7 +161,7 @@ fun openFile(
 
 }
 
-val orderSample: Order = Order(
+private val orderSample: Order = Order(
     order_id = "id_rjqw1l87r",
     order_name = "Test Document",
     location = "123 Main St",

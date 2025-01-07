@@ -21,4 +21,8 @@ class PrinterAppViewModel : ViewModel() {
         }
     }
 
+    fun get_user() : User?{
+        return uiState.value.my_user
+    }
+
 }

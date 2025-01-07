@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.example.printingapp.data.AppContainer
 import com.example.printingapp.data.DefaultAppContainer
+import com.example.printingapp.ui.PrinterAppViewModel
 
 
 class PrinterApplication : Application () {
@@ -17,6 +18,7 @@ class PrinterApplication : Application () {
     companion object {
         lateinit var instance: PrinterApplication
             private set
+        lateinit var appViewModel: PrinterAppViewModel
     }
 
     fun saveGlobalValue(key: String, value: String) {
@@ -31,5 +33,7 @@ class PrinterApplication : Application () {
         val sharedPref = getSharedPreferences("MyGlobalPreferences", MODE_PRIVATE)
         return sharedPref.getString(key, null)
     }
+
+
 
 }

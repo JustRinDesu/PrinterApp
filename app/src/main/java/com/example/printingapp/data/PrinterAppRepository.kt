@@ -17,10 +17,16 @@ import java.io.File
 
 interface PrinterAppRepository {
     suspend fun getAllOrders(): List<Order>
+    suspend fun getAllOrdersByCustId(id: String): List<Order>
+    suspend fun getAllOrdersByAdmId(id: String): List<Order>
+    suspend fun getAllOrdersByStatus(status: String): List<Order>
+    suspend fun getAllOrdersByAdmIdStatus(id: String,status: String): List<Order>
     suspend fun getOrderById(id: String): Order
     suspend fun createOrder(newOrder: Order): Response<Void>
     suspend fun updateOrder(id: String, updatedOrder: Order): Response<Void>
     suspend fun deleteOrder(id: String): Response<Void>
+
+    suspend fun prepareOrder(user: User, orderId: String,status: String): Response<Void>
 
     suspend fun loginUser(user: User): Response<User>
 
@@ -37,7 +43,11 @@ class NetworkPrinterAppRepository(
 
 
 ) : PrinterAppRepository {
-    override suspend fun getAllOrders(): List<Order> = printerApiServices.getAllOrders()
+    override suspend fun getAllOrders(): List<Order> = printerApiServices.getAllOrders("","","")
+    override suspend fun getAllOrdersByCustId(id: String): List<Order> = printerApiServices.getAllOrders(id,"","")
+    override suspend fun getAllOrdersByAdmId(id: String): List<Order> = printerApiServices.getAllOrders("",id,"")
+    override suspend fun getAllOrdersByStatus(status: String): List<Order> = printerApiServices.getAllOrders("","",status)
+    override suspend fun getAllOrdersByAdmIdStatus(id: String,status: String): List<Order> = printerApiServices.getAllOrders("",id,status)
     override suspend fun getOrderById(id: String): Order = printerApiServices.getOrderById(id)
     override suspend fun createOrder(newOrder: Order): Response<Void> =
         printerApiServices.createOrder(newOrder)
@@ -45,6 +55,8 @@ class NetworkPrinterAppRepository(
         printerApiServices.updateOrder(id, updatedOrder)
     override suspend fun deleteOrder(id: String): Response<Void> =
         printerApiServices.deleteOrder(id)
+
+    override suspend fun prepareOrder(user: User, orderId: String, status: String): Response<Void> = printerApiServices.prepareOrder(user,orderId,status)
 
     override suspend fun loginUser(user: User): Response<User> {
         return printerApiServices.loginUser(user)
@@ -54,17 +66,17 @@ class NetworkPrinterAppRepository(
         val contentResolver = context.contentResolver
         val inputStream = contentResolver.openInputStream(uri)
 
-        // Create a temporary file from the input stream (for upload purposes)
+
         val tempFile = withContext(Dispatchers.IO) {
-            // Extract the file extension from the Uri
+
             val fileExtension = context.contentResolver.getType(uri)?.let {
                 MimeTypeMap.getSingleton().getExtensionFromMimeType(it)
-            } ?: "tmp"  // Default to "tmp" if the MIME type isn't found
+            } ?: "tmp"
 
-            // Create the temp file with the extracted extension
+
             File.createTempFile("upload_temp", ".$fileExtension", context.cacheDir)
         }.apply {
-            // Open input stream and copy the contents from Uri
+
             inputStream?.let { inputStream ->
                 outputStream().use { fileOut ->
                     inputStream.copyTo(fileOut)
@@ -72,7 +84,6 @@ class NetworkPrinterAppRepository(
             }
         }
 
-// Create request body for the file
         val requestBody = tempFile.asRequestBody("multipart/form-data".toMediaTypeOrNull())
         val part = MultipartBody.Part.createFormData("file", tempFile.name, requestBody)
 

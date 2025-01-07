@@ -12,11 +12,10 @@ import com.example.printingapp.PrinterApplication
 import com.example.printingapp.data.PrinterAppRepository
 import com.example.printingapp.model.Order
 import kotlinx.coroutines.launch
-import retrofit2.Response
 import java.io.IOException
 
 
-class OrdersViewModel(private val printAppRepository: PrinterAppRepository) : ViewModel() {
+class CustomerDashboardViewModel(private val printAppRepository: PrinterAppRepository) : ViewModel() {
     var ordersUiState: OrdersUiState by mutableStateOf(OrdersUiState.Loading)
         private set
 
@@ -29,11 +28,11 @@ class OrdersViewModel(private val printAppRepository: PrinterAppRepository) : Vi
         object Loading : OrdersUiState
     }
 
-    fun getAllOrders() {
+    fun getAllOrdersByCustId(id: String) {
         viewModelScope.launch {
             ordersUiState = OrdersUiState.Loading
             ordersUiState = try {
-                OrdersUiState.Success(printAppRepository.getAllOrders())
+                OrdersUiState.Success(printAppRepository.getAllOrdersByCustId(id))
             } catch (e: IOException) {
                 OrdersUiState.Error(e)
             } catch (e: HttpException) {
@@ -48,7 +47,7 @@ class OrdersViewModel(private val printAppRepository: PrinterAppRepository) : Vi
             initializer {
                 val application = (this[APPLICATION_KEY] as PrinterApplication)
                 val printAppRepository = application.container.printerAppRepository
-                OrdersViewModel(printAppRepository = printAppRepository)
+                CustomerDashboardViewModel(printAppRepository = printAppRepository)
             }
         }
 

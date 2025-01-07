@@ -365,13 +365,12 @@ private fun createNewOrder(
 }
 
 @Composable
-private fun CustomInputRow(
+fun CustomInputRow(
     modifier: Modifier = Modifier, content: @Composable RowScope.() -> Unit
 ) {
     Row(
         modifier = modifier
             .padding(vertical = 10.dp)
-            .fillMaxWidth()
             .height(60.dp),
 
         horizontalArrangement = Arrangement.spacedBy(10.dp),

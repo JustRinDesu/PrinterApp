@@ -1,28 +1,35 @@
 package com.example.printingapp.ui.screen.customer
 
-import OrdersViewModel
+import CustomerDashboardViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -31,23 +38,28 @@ import com.example.printingapp.model.Order
 import com.example.printingapp.ui.CircleButtonDashboard
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
+import com.example.printingapp.ui.theme.PrintingAppTheme
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomerDashboardScreen(
     modifier: Modifier = Modifier,
     onNewOrderButton: () -> Unit = {},
     onOrderHistoryButton: () -> Unit = {},
     onExtraButton: () -> Unit = {},
-    orderViewModel: OrdersViewModel? = viewModel(factory = OrdersViewModel.Factory),
+    orderViewModel: CustomerDashboardViewModel? = viewModel(factory = CustomerDashboardViewModel.Factory),
     onOrderClick: (String) -> Unit = {}
 ) {
     Surface(
-        modifier = modifier.padding(0.dp, 80.dp, 0.dp, 0.dp)
+        modifier = modifier
+            .padding(0.dp, 80.dp, 0.dp, 0.dp)
+            .fillMaxHeight()
     ) {
 
 
         Column(
+            modifier = Modifier.fillMaxHeight()
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth()
@@ -72,49 +84,96 @@ fun CustomerDashboardScreen(
 
             }
 
-            var username by remember { mutableStateOf(PrinterApplication.instance.getGlobalValue("username"))}
+            orderViewModel.let {
+                val username = PrinterApplication.appViewModel.get_user()?.username
 
-            username = PrinterApplication.instance.getGlobalValue("username") ?: "failed"
+                Text("Hello $username test")
+                Row() {
+                    Text(
+                        text = "Active order:",
+                        modifier = Modifier.padding(10.dp, 20.dp, 10.dp, 0.dp)
+                    )
 
-            Text( "Hello ${username}" )
 
-            Text(
-                text = "Active order:",
-                modifier = Modifier.padding(10.dp, 20.dp, 10.dp, 0.dp)
-            )
-
-            orderViewModel?.let{
-                LaunchedEffect(Unit) {
-                    orderViewModel.getAllOrders()
                 }
-                MyActiveOrder(
-                    ordersUiState = orderViewModel.ordersUiState,
-                    retryAction = orderViewModel::getAllOrders,
-                    onOrderClick = onOrderClick
-                )
             }
+
+            orderViewModel?.let {
+
+            val isRefreshing by remember{ mutableStateOf(false)}
+            val onRefresh = {orderViewModel.getAllOrdersByCustId(
+                PrinterApplication.appViewModel.get_user()?.username ?: ""
+            )}
+
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = onRefresh,
+                modifier = modifier
+            ) {
+
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                        .height(IntrinsicSize.Max)
+                        .background(MaterialTheme.colorScheme.secondaryContainer),
+
+
+                    ) {
+
+                        LaunchedEffect(Unit) {
+                            orderViewModel.getAllOrdersByCustId(
+                                PrinterApplication.appViewModel.get_user()?.username ?: ""
+                            )
+                        }
+                        MyActiveOrder(
+                            ordersUiState = orderViewModel.ordersUiState,
+                            retryAction = {
+                                orderViewModel.getAllOrdersByCustId(
+                                    PrinterApplication.appViewModel.get_user()?.username ?: ""
+                                )
+                            },
+                            onOrderClick = onOrderClick
+                        )
+                    }
+                }
+            }
+
 
         }
     }
 }
 
+@Preview(showBackground = true, widthDp = 360, heightDp = 640)
 @Composable
-fun MyActiveOrder(
-    ordersUiState: OrdersViewModel.OrdersUiState,
+fun CustomerDashboardPreview() {
+    PrintingAppTheme {
+        CustomerDashboardScreen(orderViewModel = null)
+    }
+}
+
+
+@Composable
+private fun MyActiveOrder(
+    ordersUiState: CustomerDashboardViewModel.OrdersUiState,
     retryAction: () -> Unit,
     modifier: Modifier = Modifier,
     onOrderClick: (String) -> Unit
 ) {
     when (ordersUiState) {
-        is OrdersViewModel.OrdersUiState.Loading -> {
+        is CustomerDashboardViewModel.OrdersUiState.Loading -> {
             LoadingScreen(modifier = modifier.fillMaxSize())
         }
 
-        is OrdersViewModel.OrdersUiState.Success -> {
-            OrderCards(ordersUiState.orders, onOrderClick = onOrderClick)
+        is CustomerDashboardViewModel.OrdersUiState.Success -> {
+            if (ordersUiState.orders.isNotEmpty()){
+                OrderCards(ordersUiState.orders, onOrderClick = onOrderClick)
+            }
+            else{
+                Text("No Active Order", textAlign = TextAlign.Center, fontSize = 30.sp, modifier = Modifier.fillMaxWidth().height(200.dp))
+            }
         }
 
-        is OrdersViewModel.OrdersUiState.Error -> {
+        is CustomerDashboardViewModel.OrdersUiState.Error -> {
             ordersUiState.exception?.message?.let {
                 Text(it)
                 ErrorScreen(
@@ -128,7 +187,7 @@ fun MyActiveOrder(
 }
 
 @Composable
-fun OrderCards(
+private fun OrderCards(
     orders: List<Order>,
     onOrderClick: (String) -> Unit
 ) {
@@ -153,6 +212,14 @@ private fun OrderCard(
 
     val orderDescription =
         "${order.print_detail.paper_type} - ${order.print_detail.paper_width}x${order.print_detail.paper_height}"
+
+    val status = when(order.status){
+        "pickup" -> "Ready for pickup"
+        "pending" -> "Processing Order"
+        "preparing" -> "Preparing Order"
+        else -> order.status
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -179,7 +246,7 @@ private fun OrderCard(
             fontSize = 12.sp
         )
         Text(
-            text = order.status,
+            text = status,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp),
