@@ -73,4 +73,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("com.lightspark:compose-qr-code:1.0.1")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }

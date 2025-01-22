@@ -1,4 +1,6 @@
-package com.example.printingapp.ui.screen.common
+package com.example.printingapp.ui.screen.admin
+
+import com.example.printingapp.ui.screen.common.OrderDetailsViewModel
 
 import android.content.Context
 import android.content.Intent
@@ -26,19 +28,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.printingapp.PrinterApplication
 import com.example.printingapp.model.Order
 import com.example.printingapp.model.PrintDetail
+import com.example.printingapp.model.User
+import com.example.printingapp.ui.DropDown
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.MinimalDialog
+import com.example.printingapp.ui.screen.customer.CustomInputRow
 import com.example.printingapp.ui.theme.PrintingAppTheme
 import com.lightspark.composeqr.QrCodeView
 
 
 @Composable
-fun OrderDetailsScreen(
+fun AdminOrderDetailsScreen(
     modifier: Modifier = Modifier,
     orderId: String,
     viewModel: OrderDetailsViewModel? = viewModel(factory = OrderDetailsViewModel.Factory),
@@ -50,6 +57,15 @@ fun OrderDetailsScreen(
             viewModel.getOrder(orderId)
         }
 
+        val updateStatusClick = { status: String ->
+            viewModel.updateStatus(
+                status,
+                PrinterApplication.appViewModel.get_user() ?: User("admin_1",null,"hello","admin"),
+                orderId,
+            )
+        }
+
+
         val orderUiState = viewModel.orderUiState
 
         when (orderUiState) {
@@ -58,7 +74,7 @@ fun OrderDetailsScreen(
             }
 
             is OrderDetailsViewModel.OrderUiState.Success -> {
-                OrderDetails(orderUiState.order)
+                OrderDetails(orderUiState.order,updateStatusClick)
             }
 
             is OrderDetailsViewModel.OrderUiState.Error -> {
@@ -80,7 +96,8 @@ fun OrderDetailsScreen(
 
 @Composable
 fun OrderDetails(
-    order: Order
+    order: Order,
+    updateStatusClick: (String) -> Unit
 ){
     Column(
         modifier = Modifier.padding(horizontal = 20.dp),
@@ -97,7 +114,7 @@ fun OrderDetails(
             "Test",
             modifier = Modifier
                 .fillMaxWidth()
-                .height(400.dp),
+                .height(350.dp),
             contentScale = ContentScale.FillHeight
         )
 
@@ -109,7 +126,9 @@ fun OrderDetails(
         }
 
         Card(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth()
         ) {
 
             Text(
@@ -200,6 +219,40 @@ fun OrderDetails(
             Text("Show QR")
         }
 
+        val statusList = listOf(
+            "pending",
+            "preparing",
+            "pickup",
+            "completed",
+            "canceled"
+        )
+
+        val statusIndex = remember { mutableStateOf(0) }
+
+
+        CustomInputRow{
+            DropDown(
+                statusList.map { it },
+                statusIndex,
+                modifier = Modifier
+                    .weight(2f)
+                    .padding(top = 4.dp),
+                label = {
+                    Text("Status", fontSize = 10.sp)
+                })
+
+            Button(
+                onClick = {
+                    updateStatusClick(statusList[statusIndex.value])
+                },
+                shape = RoundedCornerShape(10),
+                modifier = Modifier.weight(1f)
+            )
+            {
+                Text("Update status")
+            }
+        }
+
 
 
 
@@ -240,6 +293,6 @@ private val orderSample: Order = Order(
 @Composable
 fun OrderDetailsScreenPreview(){
     PrintingAppTheme {
-        OrderDetails(order = orderSample)
+        OrderDetails(order = orderSample, updateStatusClick = { })
     }
 }

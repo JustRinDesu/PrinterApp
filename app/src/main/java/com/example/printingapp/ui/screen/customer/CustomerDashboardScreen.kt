@@ -194,6 +194,7 @@ private fun OrderCards(
 
     Column(
         modifier = Modifier
+            .padding(10.dp,0.dp,10.dp,0.dp)
             .background(MaterialTheme.colorScheme.secondaryContainer)
             .verticalScroll(rememberScrollState())
 

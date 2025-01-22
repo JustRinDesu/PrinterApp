@@ -164,18 +164,19 @@ fun DropDownPreview() {
 }
 
 @Composable
-fun MinimalDialog(onDismissRequest: () -> Unit, contents: @Composable ColumnScope.() -> Unit) {
+fun MinimalDialog(onDismissRequest: () -> Unit, modifier: Modifier = Modifier, contents: @Composable ColumnScope.() -> Unit = {}) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
         Card(
-            modifier = Modifier
+            modifier = modifier
                 .fillMaxWidth()
-                .height(300.dp)
+                .height(400.dp)
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
         ) {
 
             Column(
                 verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight(),

@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -60,7 +59,8 @@ fun LoginScreen(
 
             if (showDialog) {
                 MinimalDialog(
-                    onDismissRequest = minimalDialogClose
+                    onDismissRequest = minimalDialogClose,
+                    modifier = Modifier
                 ) {
                     when (loginViewModel.loginUiState) {
                         is LoginViewModel.LoginUiState.Loading -> {

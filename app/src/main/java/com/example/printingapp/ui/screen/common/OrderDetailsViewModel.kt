@@ -12,12 +12,16 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.printingapp.PrinterApplication
 import com.example.printingapp.data.PrinterAppRepository
 import com.example.printingapp.model.Order
+import com.example.printingapp.model.User
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 
 class OrderDetailsViewModel(private val printAppRepository: PrinterAppRepository) : ViewModel() {
     var orderUiState: OrderUiState by mutableStateOf(OrderUiState.Loading)
+        private set
+    var orderUpdateUiState: OrderUpdateUiState by mutableStateOf(OrderUpdateUiState.Loading)
         private set
 
     init {
@@ -30,6 +34,12 @@ class OrderDetailsViewModel(private val printAppRepository: PrinterAppRepository
         object Loading : OrderUiState
     }
 
+    sealed interface OrderUpdateUiState {
+        data class OrderModificationSuccess(val response: Response<Void>) : OrderUpdateUiState
+        data class Error(val exception: Throwable? = null) : OrderUpdateUiState
+        object Loading : OrderUpdateUiState
+    }
+
     fun getOrder(id: String) {
         viewModelScope.launch {
             orderUiState = OrderUiState.Loading
@@ -39,6 +49,19 @@ class OrderDetailsViewModel(private val printAppRepository: PrinterAppRepository
                 OrderUiState.Error(e)
             } catch (e: HttpException) {
                 OrderUiState.Error(e)
+            }
+        }
+    }
+
+    fun updateStatus(status: String, staff: User, id: String){
+        viewModelScope.launch {
+            orderUpdateUiState = OrderUpdateUiState.Loading
+            orderUpdateUiState = try {
+                OrderUpdateUiState.OrderModificationSuccess(printAppRepository.prepareOrder(staff,id,status))
+            } catch (e: IOException) {
+                OrderUpdateUiState.Error(e)
+            } catch (e: HttpException) {
+                OrderUpdateUiState.Error(e)
             }
         }
     }

@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.printingapp.ui.PrinterAppViewModel
 import com.example.printingapp.ui.screen.admin.AdminDashboardScreen
+import com.example.printingapp.ui.screen.admin.AdminOrderDetailsScreen
 import com.example.printingapp.ui.screen.admin.JobListScreen
 import com.example.printingapp.ui.screen.admin.OrderListScreen
 import com.example.printingapp.ui.screen.admin.PickupListScreen
@@ -128,27 +129,30 @@ private fun PrinterApp(
                 AdminDashboardScreen(
                     onOrderListClick = {navController.navigate((PrinterAppScreen.OrderList.name))},
                     onJobListClick = {navController.navigate(PrinterAppScreen.JobList.name)},
-                    onPickupListClick = {navController.navigate(PrinterAppScreen.PickupList.name)}
+                    onPickupListClick = {navController.navigate(PrinterAppScreen.PickupList.name)},
+                    onOrderClick = {orderId ->
+                        navController.navigate(route = "order/${orderId}/edit")
+                    }
                 )
             }
             composable(PrinterAppScreen.JobList.name) {
                 JobListScreen(
                     onOrderClick = {orderId ->
-                        navController.navigate(route = "order/${orderId}")
+                        navController.navigate(route = "order/${orderId}/edit")
                     }
                 )
             }
             composable(PrinterAppScreen.PickupList.name) {
                 PickupListScreen(
                     onOrderClick = {orderId ->
-                        navController.navigate(route = "order/${orderId}")
+                        navController.navigate(route = "order/${orderId}/edit")
                     }
                 )
             }
             composable(PrinterAppScreen.OrderList.name) {
                 OrderListScreen(
                     onOrderClick = {orderId ->
-                        navController.navigate(route = "order/${orderId}")
+                        navController.navigate(route = "order/${orderId}/edit")
                     }
                 )
             }
@@ -165,6 +169,21 @@ private fun PrinterApp(
                 val orderId = it.arguments?.getString("orderId") ?: ""
 
                 OrderDetailsScreen(
+                    orderId = orderId
+                )
+            }
+            composable(
+                route = "order/{orderId}/edit",
+                arguments = listOf(
+                    navArgument("orderId") {
+                        type = NavType.StringType
+                    }
+                )
+            )
+            {
+                val orderId = it.arguments?.getString("orderId") ?: ""
+
+                AdminOrderDetailsScreen(
                     orderId = orderId
                 )
             }

@@ -6,7 +6,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -59,6 +57,12 @@ val paperSizes = listOf(
     "Letter" to ("8.5" to "11.0")
 )
 
+val locations = listOf(
+    "KPZ",
+    "KKM",
+    "KUO"
+)
+
 @Composable
 fun NewOrderScreen(
     modifier: Modifier = Modifier,
@@ -73,6 +77,7 @@ fun NewOrderScreen(
         var noOfPage by remember { mutableStateOf("1") }
         val paperType = listOf("Matte", "Gloss", "Cardstock")
         val paperTypeIndex = remember { mutableStateOf(0) }
+        val locationIndex = remember { mutableStateOf(0) }
         val paperSizeIndex = remember { mutableStateOf(0) }
         var paperWidth by remember { mutableStateOf("") }
         var paperHeight by remember { mutableStateOf("") }
@@ -93,20 +98,14 @@ fun NewOrderScreen(
                     modifier = Modifier.weight(3f)
                 )
 
-                /* TODO location choice*/
-                Button(
+                DropDown(locations.map { it },
+                    locationIndex,
                     modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 20.dp),
-                    onClick = {},
-                    shape = MaterialTheme.shapes.small,
-                    contentPadding = PaddingValues(0.dp),
-
-                    ) {
-                    Icon(
-                        imageVector = Icons.Default.LocationOn, contentDescription = "Location"
-                    )
-                }
+                        .weight(2f)
+                        .padding(top = 4.dp),
+                    label = {
+                        Text("Location", fontSize = 10.sp)
+                    })
             }
 
             CustomInputRow {
@@ -275,6 +274,7 @@ fun NewOrderScreen(
                                 documentName = documentName,
                                 noOfPage = noOfPage,
                                 paperType = paperType,
+                                location = locations[locationIndex.value],
                                 paperTypeIndex = paperTypeIndex,
                                 paperWidth = paperWidth,
                                 paperHeight = paperHeight,
@@ -333,6 +333,7 @@ const val REQUEST_IMAGE_GET = 1
 private fun createNewOrder(
     documentName: String,
     noOfPage: String,
+    location: String,
     paperType: List<String>,
     paperTypeIndex: MutableState<Int>,
     paperWidth: String,
@@ -344,7 +345,7 @@ private fun createNewOrder(
     val order = Order(
         order_name = documentName,
         order_id = "",
-        location = "123 Main St",
+        location = location,
         status = "pending",
         customer_id = PrinterApplication.instance.getGlobalValue("username") ?: "customer_1",
         admin_id = "",

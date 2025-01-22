@@ -1,5 +1,6 @@
 package com.example.printingapp.ui.screen.admin
 
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,8 @@ import com.example.printingapp.ui.CircleButtonDashboard
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.theme.PrintingAppTheme
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 
 @Composable
 fun AdminDashboardScreen(
@@ -22,9 +25,19 @@ fun AdminDashboardScreen(
     onOrderListClick: () -> Unit = {},
     onJobListClick: () -> Unit = {},
     onPickupListClick: () -> Unit = {},
+    onOrderClick: (String) -> Unit = {}
 ) {
+
+    val qrScannerLauncher = rememberLauncherForActivityResult(
+        contract = ScanContract()
+    ) { result ->
+        if (result.contents != null) {
+            onOrderClick(result.contents)
+        }
+    }
+
     Surface(
-        modifier = modifier.padding(0.dp, 80.dp, 0.dp, 0.dp)
+        modifier = modifier.padding(20.dp, 80.dp, 20.dp, 0.dp)
     ) {
         Column {
             Row(
@@ -33,7 +46,19 @@ fun AdminDashboardScreen(
 
                 CircleButtonDashboard("Order List", modifier = Modifier.weight(1f), onButtonClick = onOrderListClick)
                 CircleButtonDashboard("Job List", modifier = Modifier.weight(1f), onButtonClick = onJobListClick)
-                CircleButtonDashboard("Pick up List", modifier = Modifier.weight(1f), onButtonClick = onPickupListClick)
+
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                CircleButtonDashboard("Pickup List", modifier = Modifier.weight(1f), onButtonClick = onPickupListClick)
+                CircleButtonDashboard("Scan QR", modifier = Modifier.weight(1f), onButtonClick = {
+                    val options = ScanOptions()
+                    options.setPrompt("Scan a QR Code")
+                    options.setBeepEnabled(true)
+                    options.setBarcodeImageEnabled(true)
+                    qrScannerLauncher.launch(options)
+                })
 
             }
         }
