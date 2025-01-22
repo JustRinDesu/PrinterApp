@@ -1,6 +1,6 @@
 package com.example.printingapp.ui.screen.admin
 
-import OrderListViewModel
+import com.example.printingapp.ui.screen.common.OrderListViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box

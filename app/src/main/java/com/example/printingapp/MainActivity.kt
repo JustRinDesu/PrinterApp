@@ -30,6 +30,7 @@ import com.example.printingapp.ui.screen.customer.CustomerDashboardScreen
 import com.example.printingapp.ui.screen.common.LoginScreen
 import com.example.printingapp.ui.screen.common.OrderDetailsScreen
 import com.example.printingapp.ui.screen.customer.NewOrderScreen
+import com.example.printingapp.ui.screen.customer.OrderHistoryScreen
 
 enum class PrinterAppScreen() {
     Login,
@@ -119,7 +120,12 @@ private fun PrinterApp(
                 NewOrderScreen(onBackButton = { navController.popBackStack() })
             }
             composable(PrinterAppScreen.OrderHistory.name) {
-                /*TODO OrderHistory*/
+                OrderHistoryScreen(
+                    modifier = Modifier,
+                    onOrderClick = {orderId ->
+                        navController.navigate(route = "order/${orderId}")
+                    }
+                )
             }
 
 

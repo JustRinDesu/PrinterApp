@@ -1,3 +1,5 @@
+package com.example.printingapp.ui.screen.common
+
 import retrofit2.HttpException
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,11 +54,29 @@ class OrderListViewModel(private val printAppRepository: PrinterAppRepository) :
         }
     }
 
-    fun getAllOrdersByCustomerStatus(user: User, status: String) {
+    fun getAllOrdersByCustId(id: String) {
         viewModelScope.launch {
             ordersUiState = OrdersUiState.Loading
             ordersUiState = try {
-                OrdersUiState.Success(printAppRepository.getAllOrdersByStatus(status))
+                OrdersUiState.Success(printAppRepository.getAllOrdersByCustId(id))
+            } catch (e: IOException) {
+                OrdersUiState.Error(e)
+            } catch (e: HttpException) {
+                OrdersUiState.Error(e)
+            }
+        }
+    }
+
+    fun getAllOrdersByCustomerStatus(customer: User, status: String) {
+        viewModelScope.launch {
+            ordersUiState = OrdersUiState.Loading
+            ordersUiState = try {
+                OrdersUiState.Success(
+                    printAppRepository.getAllOrdersByCustomerStatus(
+                        customer.username,
+                        status
+                    )
+                )
             } catch (e: IOException) {
                 OrdersUiState.Error(e)
             } catch (e: HttpException) {
@@ -69,7 +89,12 @@ class OrderListViewModel(private val printAppRepository: PrinterAppRepository) :
         viewModelScope.launch {
             ordersUiState = OrdersUiState.Loading
             ordersUiState = try {
-                OrdersUiState.Success(printAppRepository.getAllOrdersByAdmIdStatus(AdmId ?: "",status))
+                OrdersUiState.Success(
+                    printAppRepository.getAllOrdersByAdmIdStatus(
+                        AdmId ?: "",
+                        status
+                    )
+                )
             } catch (e: IOException) {
                 OrdersUiState.Error(e)
             } catch (e: HttpException) {
@@ -84,7 +109,13 @@ class OrderListViewModel(private val printAppRepository: PrinterAppRepository) :
             prepareUiState = PrepareUiState.Loading
             prepareUiState = try {
 
-                PrepareUiState.Success(printAppRepository.prepareOrder(user ?: User("","","", ""),id,status))
+                PrepareUiState.Success(
+                    printAppRepository.prepareOrder(
+                        user ?: User("", "", "", ""),
+                        id,
+                        status
+                    )
+                )
             } catch (e: IOException) {
                 PrepareUiState.Error(e)
             } catch (e: HttpException) {

@@ -20,6 +20,7 @@ interface PrinterAppRepository {
     suspend fun getAllOrdersByCustId(id: String): List<Order>
     suspend fun getAllOrdersByAdmId(id: String): List<Order>
     suspend fun getAllOrdersByStatus(status: String): List<Order>
+    suspend fun getAllOrdersByCustomerStatus(customer: String, status: String): List<Order>
     suspend fun getAllOrdersByAdmIdStatus(id: String,status: String): List<Order>
     suspend fun getOrderById(id: String): Order
     suspend fun createOrder(newOrder: Order): Response<Void>
@@ -47,6 +48,8 @@ class NetworkPrinterAppRepository(
     override suspend fun getAllOrdersByCustId(id: String): List<Order> = printerApiServices.getAllOrders(id,"","")
     override suspend fun getAllOrdersByAdmId(id: String): List<Order> = printerApiServices.getAllOrders("",id,"")
     override suspend fun getAllOrdersByStatus(status: String): List<Order> = printerApiServices.getAllOrders("","",status)
+    override suspend fun getAllOrdersByCustomerStatus(customer: String, status: String): List<Order> = printerApiServices.getAllOrders(customer,"",status)
+
     override suspend fun getAllOrdersByAdmIdStatus(id: String,status: String): List<Order> = printerApiServices.getAllOrders("",id,status)
     override suspend fun getOrderById(id: String): Order = printerApiServices.getOrderById(id)
     override suspend fun createOrder(newOrder: Order): Response<Void> =
