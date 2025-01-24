@@ -44,8 +44,10 @@ class NetworkPrinterAppRepository(
 
 
 ) : PrinterAppRepository {
-    override suspend fun getAllOrders(): List<Order> = printerApiServices.getAllOrders("","","")
-    override suspend fun getAllOrdersByCustId(id: String): List<Order> = printerApiServices.getAllOrders(id,"","")
+    override suspend fun getAllOrders(): List<Order> =
+        printerApiServices.getAllOrders("","","")
+    override suspend fun getAllOrdersByCustId(id: String): List<Order> =
+        printerApiServices.getAllOrders(id,"","")
     override suspend fun getAllOrdersByAdmId(id: String): List<Order> = printerApiServices.getAllOrders("",id,"")
     override suspend fun getAllOrdersByStatus(status: String): List<Order> = printerApiServices.getAllOrders("","",status)
     override suspend fun getAllOrdersByCustomerStatus(customer: String, status: String): List<Order> = printerApiServices.getAllOrders(customer,"",status)

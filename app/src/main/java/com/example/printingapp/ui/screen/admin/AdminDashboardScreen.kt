@@ -3,18 +3,14 @@ package com.example.printingapp.ui.screen.admin
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.printingapp.ui.CircleButtonDashboard
-import com.example.printingapp.ui.ErrorScreen
-import com.example.printingapp.ui.LoadingScreen
 import com.example.printingapp.ui.theme.PrintingAppTheme
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
@@ -25,7 +21,8 @@ fun AdminDashboardScreen(
     onOrderListClick: () -> Unit = {},
     onJobListClick: () -> Unit = {},
     onPickupListClick: () -> Unit = {},
-    onOrderClick: (String) -> Unit = {}
+    onOrderClick: (String) -> Unit = {},
+    onAllOrderListClick: () -> Unit = {}
 ) {
 
     val qrScannerLauncher = rememberLauncherForActivityResult(
@@ -46,12 +43,13 @@ fun AdminDashboardScreen(
 
                 CircleButtonDashboard("Order List", modifier = Modifier.weight(1f), onButtonClick = onOrderListClick)
                 CircleButtonDashboard("Job List", modifier = Modifier.weight(1f), onButtonClick = onJobListClick)
+                CircleButtonDashboard("Pickup List", modifier = Modifier.weight(1f), onButtonClick = onPickupListClick)
 
             }
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
-                CircleButtonDashboard("Pickup List", modifier = Modifier.weight(1f), onButtonClick = onPickupListClick)
+                CircleButtonDashboard("All Order", modifier = Modifier.weight(1f), onButtonClick = onAllOrderListClick)
                 CircleButtonDashboard("Scan QR", modifier = Modifier.weight(1f), onButtonClick = {
                     val options = ScanOptions()
                     options.setPrompt("Scan a QR Code")

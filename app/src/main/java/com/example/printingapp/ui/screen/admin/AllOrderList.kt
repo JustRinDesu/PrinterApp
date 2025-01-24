@@ -1,26 +1,30 @@
-package com.example.printingapp.ui.screen.customer
+package com.example.printingapp.ui.screen.admin
 
+
+import com.example.printingapp.ui.screen.common.OrderListViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -28,10 +32,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,24 +42,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.printingapp.PrinterApplication
 import com.example.printingapp.model.Order
 import com.example.printingapp.model.PrintDetail
-import com.example.printingapp.model.User
 import com.example.printingapp.ui.ErrorScreen
 import com.example.printingapp.ui.LoadingScreen
-import com.example.printingapp.ui.screen.common.OrderListViewModel
 import com.example.printingapp.ui.theme.PrintingAppTheme
-
-@Preview(showBackground = true)
-@Composable
-fun OrderHistoryScreenPreview() {
-    PrintingAppTheme {
-
-    }
-}
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun OrderHistoryScreen(
+fun AllOrderListScreen(
     modifier: Modifier = Modifier,
     viewModel: OrderListViewModel = viewModel(factory = OrderListViewModel.Factory),
     onOrderClick: (String) -> Unit = {}
@@ -72,90 +63,23 @@ fun OrderHistoryScreen(
 
         viewModel.let {
 
-            val user = PrinterApplication.appViewModel.get_user() ?: User(
-                "customer_1",
-                null,
-                "User",
-                "customer"
-            )
 
-            var refreshData = {
-                viewModel.getAllOrdersByCustId(user.username)
-            }
-
-            Row {
-                var selectedButton by remember { mutableStateOf(1) }
-
-
-                Button(
-                    onClick = {
-
-                        refreshData = {
-                            viewModel.getAllOrdersByCustId(user.username)
-                        }
-                        refreshData()
-                        selectedButton = 1
-
-                    },
-                    shape = RoundedCornerShape(10),
-                    modifier = Modifier.weight(1f),
-                    colors = if (selectedButton != 1) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                )
-                {
-                    Text("Active")
-                }
-                Button(
-                    onClick = {
-
-                        refreshData = {
-                            viewModel.getAllOrdersByCustomerStatus(user, "canceled")
-                        }
-                        refreshData()
-                        selectedButton = 2
-
-                    },
-                    shape = RoundedCornerShape(10),
-                    modifier = Modifier.weight(1f),
-                    colors = if (selectedButton != 2) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                )
-                {
-                    Text("Canceled")
-                }
-
-                Button(
-                    onClick = {
-
-                        refreshData = {
-                            viewModel.getAllOrdersByCustomerStatus(user, "completed")
-                        }
-                        refreshData()
-                        selectedButton = 3
-                    },
-                    shape = RoundedCornerShape(10),
-                    modifier = Modifier.weight(1f),
-                    colors = if (selectedButton != 3) ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary) else ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                )
-                {
-                    Text("Completed")
-                }
-            }
-
-
-
-
+            val user = PrinterApplication.appViewModel.get_user()
+            val refreshData = { viewModel.getAllOrders() }
 
             CustomPullToRefreshBox(
-                onRefresh = refreshData ,
+                onRefresh = refreshData,
             ) {
 
                 Column(
                     modifier = Modifier
                         .verticalScroll(rememberScrollState())
                         .height(IntrinsicSize.Max)
-                        .heightIn(min = 800.dp)
+                        .heightIn(min =  800.dp)
                         .fillMaxWidth()
                         .background(MaterialTheme.colorScheme.primaryContainer)
                 ) {
+
 
 
                     LaunchedEffect(Unit) {
@@ -179,24 +103,6 @@ fun OrderHistoryScreen(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun CustomPullToRefreshBox(
-    modifier: Modifier = Modifier,
-    onRefresh: () -> Unit,
-    content: @Composable (BoxScope.() -> Unit)
-) {
-
-    val isRefreshing by remember { mutableStateOf(false) }
-
-    PullToRefreshBox(
-        isRefreshing = isRefreshing,
-        onRefresh = onRefresh,
-        modifier = Modifier,
-        content = content
-    )
-
-}
 
 
 @Composable
@@ -235,6 +141,7 @@ private fun OrderCard(
                 .padding(20.dp),
             fontSize = 12.sp
         )
+
 
     }
 }
@@ -281,7 +188,7 @@ private fun MyPendingOrder(
                 )
             } else {
                 Text(
-                    "Order History is Empty",
+                    "Job List is Empty",
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxSize()
                 )

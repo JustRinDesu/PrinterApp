@@ -19,7 +19,11 @@ import retrofit2.http.Query
 interface PrinterApiService {
 
     @GET("orders")
-    suspend fun getAllOrders(@Query("customer_id") customer_id: String,@Query("admin_id") admin_id: String, @Query("status") status: String): List<Order>
+    suspend fun getAllOrders(
+        @Query("customer_id") customer_id: String,
+        @Query("admin_id") admin_id: String,
+        @Query("status") status: String):
+            List<Order>
 
     @GET("orders/{id}")
     suspend fun getOrderById(@Path("id") id: String): Order

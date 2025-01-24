@@ -23,6 +23,7 @@ import androidx.navigation.navArgument
 import com.example.printingapp.ui.PrinterAppViewModel
 import com.example.printingapp.ui.screen.admin.AdminDashboardScreen
 import com.example.printingapp.ui.screen.admin.AdminOrderDetailsScreen
+import com.example.printingapp.ui.screen.admin.AllOrderListScreen
 import com.example.printingapp.ui.screen.admin.JobListScreen
 import com.example.printingapp.ui.screen.admin.OrderListScreen
 import com.example.printingapp.ui.screen.admin.PickupListScreen
@@ -41,7 +42,8 @@ enum class PrinterAppScreen() {
     OrderDetails,
     OrderList,
     JobList,
-    PickupList
+    PickupList,
+    AllOrderList
 }
 
 
@@ -138,7 +140,8 @@ private fun PrinterApp(
                     onPickupListClick = {navController.navigate(PrinterAppScreen.PickupList.name)},
                     onOrderClick = {orderId ->
                         navController.navigate(route = "order/${orderId}/edit")
-                    }
+                    },
+                    onAllOrderListClick = {navController.navigate(PrinterAppScreen.AllOrderList.name)}
                 )
             }
             composable(PrinterAppScreen.JobList.name) {
@@ -150,6 +153,13 @@ private fun PrinterApp(
             }
             composable(PrinterAppScreen.PickupList.name) {
                 PickupListScreen(
+                    onOrderClick = {orderId ->
+                        navController.navigate(route = "order/${orderId}/edit")
+                    }
+                )
+            }
+            composable(PrinterAppScreen.AllOrderList.name) {
+                AllOrderListScreen(
                     onOrderClick = {orderId ->
                         navController.navigate(route = "order/${orderId}/edit")
                     }

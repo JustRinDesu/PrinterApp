@@ -67,6 +67,19 @@ class OrderListViewModel(private val printAppRepository: PrinterAppRepository) :
         }
     }
 
+    fun getAllOrders() {
+        viewModelScope.launch {
+            ordersUiState = OrdersUiState.Loading
+            ordersUiState = try {
+                OrdersUiState.Success(printAppRepository.getAllOrders())
+            } catch (e: IOException) {
+                OrdersUiState.Error(e)
+            } catch (e: HttpException) {
+                OrdersUiState.Error(e)
+            }
+        }
+    }
+
     fun getAllOrdersByCustomerStatus(customer: User, status: String) {
         viewModelScope.launch {
             ordersUiState = OrdersUiState.Loading
